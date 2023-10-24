@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Clasificador de Katakana</title>
+</head>
+<body>
+    <h1>Clasificador de Katakana</h1>
+    <form action="/predict" method="post" enctype="multipart/form-data">
+        <input type="file" name="image" accept="image/*">
+        <input type="submit" value="Predecir">
+    </form>
+    <div id="prediction" style="margin-top: 20px; font-size: 24px;"></div>
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script>
+        $('form').submit(function(e){
+            e.preventDefault();
+            var formData = new FormData(this);
+            $.ajax({
+                url: '/predict',
+                type: 'POST',
+                data: formData,
+                success: function(response){
+                    $('#prediction').css("font-size", "24px");
+                    $('#prediction').css("margin-top", "20px");
+                    $('#prediction').text('Predicción: ' + response.prediction);
+                },
+                cache: false,
+                contentType: false,
+                processData: false
+            });
+        });
+    </script>
+</body>
+</html>
