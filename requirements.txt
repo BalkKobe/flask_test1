@@ -25,6 +25,7 @@ ml-dtypes==0.2.0
 networkx==3.1
 numpy==1.24.3
 oauthlib==3.2.2
+opencv-python==4.5.3
 opt-einsum==3.3.0
 packaging==23.2
 Pillow==10.1.0
@@ -48,6 +49,4 @@ urllib3==2.0.6
 Werkzeug==3.0.0
 wrapt==1.14.1
 gunicorn==20.1.0
-opencv-python==4.5.3
-
 
