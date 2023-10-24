@@ -8,6 +8,7 @@ from tensorflow.keras.models import load_model
 from skimage import io
 import base64
 import glob
+import zipfile
 import numpy as np
 import tensorflow as tf
 
@@ -119,13 +120,11 @@ def main():
 @app.route('/upload', methods=['POST'])
 def upload():
     try:
-        # check if the post request has the file part
         img_data = request.form.get('myImage').replace("data:image/png;base64,","")
         aleatorio = request.form.get('numero')
         print(aleatorio)
         with tempfile.NamedTemporaryFile(delete = False, mode = "w+b", suffix='.png', dir=str(aleatorio)) as fh:
             fh.write(base64.b64decode(img_data))
-        #file = request.files['myImage']
         print("Image uploaded")
     except Exception as err:
         print("Error occurred")
@@ -174,7 +173,12 @@ def process_and_save_images():
         pil_image = Image.fromarray(image)
         pil_image.save(filename)
 
-    return f'Imagenes .jpg guardadas en "{directory_destino}".'
+    with zipfile.ZipFile('predict_imagenes.zip', 'w', zipfile.ZIP_DEFLATED) as zipf:
+        for root, _, files in os.walk(directory_destino):
+            for file in files:
+                zipf.write(os.path.join(root, file), os.path.relpath(os.path.join(root, file), directory_destino))
+
+    return send_file('predict_imagenes.zip', as_attachment=True)
 
 @app.route('/X.npy', methods=['GET'])
 def download_X():
