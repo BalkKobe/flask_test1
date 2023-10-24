@@ -154,7 +154,7 @@ def prepare_dataset():
 
 @app.route('/save', methods=['GET'])
 def process_and_save_images():
-    # Load the X.npy file
+
     X_puro = np.load('X.npy')
 
     X = []
@@ -170,7 +170,9 @@ def process_and_save_images():
 
     for i, image in enumerate(X):
         filename = f'{directory_destino}/imagen_{i}.jpg'
-        cv.imwrite(filename, (image * 255).astype(np.uint8))
+        image = (image * 255).astype(np.uint8)
+        pil_image = Image.fromarray(image)
+        pil_image.save(filename)
 
     return f'Imagenes .jpg guardadas en "{directory_destino}".'
 
@@ -195,7 +197,7 @@ def predict():
         
         image = Image.open(image_file)
         image = image.convert("L") 
-        image = image.resize((28, 28), Image.ANTIALIAS)
+        image = image.resize((28, 28), Image.BICUBIC)
         
         imagen_array = np.array(image)
         imagen_tensor = tf.convert_to_tensor(imagen_array, dtype=tf.float32)
@@ -209,13 +211,6 @@ def predict():
         return jsonify({'prediction': predicted_class})
     elif request.method == 'GET':
         return render_template("Prediccion.html")
-
-   
-    
-
-
-    
-
 
 @app.route('/predicciones')
 def show_predictions():
