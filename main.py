@@ -3,12 +3,12 @@ import os
 import subprocess
 from flask import Flask, request, render_template, redirect, send_file, jsonify
 from skimage.transform import resize
+from PIL import Image
 from tensorflow.keras.models import load_model
 from skimage import io
 import base64
 import glob
 import numpy as np
-import cv2
 import tensorflow as tf
 
 app = Flask(__name__)
@@ -170,7 +170,7 @@ def process_and_save_images():
 
     for i, image in enumerate(X):
         filename = f'{directory_destino}/imagen_{i}.jpg'
-        cv2.imwrite(filename, (image * 255).astype(np.uint8))
+        cv.imwrite(filename, (image * 255).astype(np.uint8))
 
     return f'Imagenes .jpg guardadas en "{directory_destino}".'
 
@@ -187,15 +187,20 @@ def download_y():
 def predict():
     if request.method == 'POST':
         if 'image' not in request.files:
-         return jsonify({'error': 'No se ha proporcionado ninguna imagen'})
+            return jsonify({'error': 'No se ha proporcionado ninguna imagen'})
+        
         image_file = request.files['image']
         if image_file.filename == '':
             return jsonify({'error': 'Nombre de archivo de imagen no válido'})
-        image = cv2.imdecode(np.fromstring(image_file.read(), np.uint8), cv2.IMREAD_COLOR)
-        imagen_gris = cv2.resize(image, (28, 28), interpolation=cv2.INTER_CUBIC)
-        imagen_gris = cv2.cvtColor(imagen_gris, cv2.COLOR_BGR2GRAY)
-        imagen_tensor = tf.cast(imagen_gris, dtype=tf.float32)
+        
+        image = Image.open(image_file)
+        image = image.convert("L") 
+        image = image.resize((28, 28), Image.ANTIALIAS)
+        
+        imagen_array = np.array(image)
+        imagen_tensor = tf.convert_to_tensor(imagen_array, dtype=tf.float32)
         imagen_tensor = tf.reshape(imagen_tensor, (1, 28, 28, 1))
+        
         prediction = model.predict(imagen_tensor)
 
         classes = ["Katakana A", "Katakana E", "Katakana I", "Katakana O", "Katakana U"]
@@ -230,4 +235,3 @@ if __name__ == "__main__":
         if not os.path.exists(str(d)):
             os.mkdir(str(d))
     app.run()
-
